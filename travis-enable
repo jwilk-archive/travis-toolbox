@@ -1,0 +1,42 @@
+#!/bin/bash
+
+set -e -u
+
+if [ $# -ne 1 ]
+then
+    printf '%s <repo>\n' "$0" >&2
+    exit 1
+fi
+
+cacert=/usr/share/ca-certificates/mozilla/DigiCert_High_Assurance_EV_Root_CA.crt
+repo="$1"
+[ -z "${repo##*/*}" ] || repo="$USER/$repo"
+xrepo=$(perl -E '$_ = $ARGV[0]; chomp; s/\W/sprintf "%%%02x", ord $&/ge; say $_' "$repo")
+token="$TRAVIS_TOKEN"
+
+turl()
+{
+    curl \
+        --silent --fail --show-error \
+        --cacert "$cacert" \
+        -K <(printf 'header = "Authorization: token %s"\n' "$token") \
+        -H 'Travis-API-Version: 3' \
+        -H 'User-Agent: travis-enable (jwilk@jwilk.net)' \
+        "$@"
+}
+
+turl -X POST "https://api.travis-ci.org/repo/$xrepo/activate" > /dev/null
+
+for t in builds_only_with_travis_yml auto_cancel_pushes auto_cancel_pull_requests
+do
+    turl \
+        -H 'Content-Type: application/json' -d '{ "setting.value": true }' \
+        -X PATCH "https://api.travis-ci.org/repo/$xrepo/setting/$t" > /dev/null
+done
+
+res=$(turl "https://api.travis-ci.org/repo/$xrepo")
+jq . <<EOF
+$res
+EOF
+
+# vim:ts=4 sts=4 sw=4 et
