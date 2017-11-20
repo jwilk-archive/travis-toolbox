@@ -12,7 +12,7 @@ turl()
         --cacert "$cacert" \
         -K <(printf 'header = "Authorization: token %s"\n' "$token") \
         -H 'Travis-API-Version: 3' \
-        -H 'User-Agent: travis-sync (jwilk@jwilk.net)' \
+        -H 'User-Agent: travis-sync (https://github.com/jwilk/travis-toolbox)' \
         "$@"
 }
 
