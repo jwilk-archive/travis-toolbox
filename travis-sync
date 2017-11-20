@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Copyright © 2017 Jakub Wilk <jwilk@jwilk.net>
+# SPDX-License-Identifier: MIT
+
 set -e -u
 
 cacert=/usr/share/ca-certificates/mozilla/DigiCert_High_Assurance_EV_Root_CA.crt
