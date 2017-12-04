@@ -20,15 +20,8 @@ turl()
 }
 
 res=$(turl "https://api.travis-ci.org/user")
-
-url=$(jq -r '.["@href"]' <<EOF
-$res
-EOF
-)
-
+url=$(jq -r '.["@href"]' <<<"$res")
 res=$(turl -X POST "https://api.travis-ci.org$url/sync")
-jq . <<EOF
-$res
-EOF
+jq . <<<"$res"
 
 # vim:ts=4 sts=4 sw=4 et
