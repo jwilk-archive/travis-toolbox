@@ -1,0 +1,67 @@
+#!/bin/bash
+
+# Copyright © 2017 Jakub Wilk <jwilk@jwilk.net>
+# SPDX-License-Identifier: MIT
+
+set -e -u
+
+usage()
+{
+    printf 'Usage: %s <repo> <interval> [branch]\n' "$0" >&2
+    printf 'Intervals: never daily weekly monthly\n' >&2
+    exit 1
+}
+
+urlescape()
+{
+    perl -E '$_ = $ARGV[0]; chomp; s/\W/sprintf "%%%02x", ord $&/ge; say $_' "$@"
+}
+
+turl()
+{
+    curl \
+        --silent --fail --show-error \
+        --cacert "$cacert" \
+        -K <(printf 'header = "Authorization: token %s"\n' "$token") \
+        -H 'Travis-API-Version: 3' \
+        -H 'User-Agent: travis-cron (https://github.com/jwilk/travis-toolbox)' \
+        "$@"
+}
+
+[ $# -eq 2 ] || [ $# -eq 3 ] || usage
+token="$TRAVIS_TOKEN"
+cacert=/usr/share/ca-certificates/mozilla/DigiCert_High_Assurance_EV_Root_CA.crt
+repo="$1"
+[ -z "${repo##*/*}" ] || repo="$USER/$repo"
+xrepo=$(urlescape "$repo")
+interval="$2"
+if [ $# -eq 3 ]
+then
+    branch="$3"
+    xbranch=$(urlescape "$branch")
+else
+    brach='master'
+    xbranch='master'
+fi
+if [ "$interval" = never ]
+then
+    data=
+elif [ "$interval" = 'daily' ] || [ "$interval" = 'weekly' ] || [ "$interval" = 'monthly' ]
+then
+    data=$(jo cron.interval="$interval" cron.dont_run_if_recent_build_exists@true)
+else
+    usage
+fi
+base='https://api.travis-ci.org'
+url="$base/repo/$xrepo/branch/$xbranch/cron"
+if [ -n "$data" ]
+then
+    res=$(turl -H 'Content-Type: application/json' -d "$data" -X POST "$url")
+    jq . <<<"$res"
+else
+    res=$(turl -X GET "$url")
+    id=$(jq '.["id"]' <<<"$res")
+    turl -X DELETE "$base/cron/$id"
+fi
+
+# vim:ts=4 sts=4 sw=4 et
