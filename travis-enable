@@ -5,17 +5,16 @@
 
 set -e -u
 
-if [ $# -ne 1 ]
-then
-    printf '%s <repo>\n' "$0" >&2
+usage()
+{
+    printf 'Usage: %s <repo>\n' "$0" >&2
     exit 1
-fi
+}
 
-cacert=/usr/share/ca-certificates/mozilla/DigiCert_High_Assurance_EV_Root_CA.crt
-repo="$1"
-[ -z "${repo##*/*}" ] || repo="$USER/$repo"
-xrepo=$(perl -E '$_ = $ARGV[0]; chomp; s/\W/sprintf "%%%02x", ord $&/ge; say $_' "$repo")
-token="$TRAVIS_TOKEN"
+urlescape()
+{
+    perl -E '$_ = $ARGV[0]; chomp; s/\W/sprintf "%%%02x", ord $&/ge; say $_' "$@"
+}
 
 turl()
 {
@@ -27,6 +26,13 @@ turl()
         -H 'User-Agent: travis-enable (https://github.com/jwilk/travis-toolbox)' \
         "$@"
 }
+
+[ $# -eq 1 ] || usage
+token="$TRAVIS_TOKEN"
+cacert=/usr/share/ca-certificates/mozilla/DigiCert_High_Assurance_EV_Root_CA.crt
+repo="$1"
+[ -z "${repo##*/*}" ] || repo="$USER/$repo"
+xrepo=$(urlescape "$repo")
 
 turl -X POST "https://api.travis-ci.org/repo/$xrepo/activate" > /dev/null
 
