@@ -40,7 +40,7 @@ then
     branch="$3"
     xbranch=$(urlescape "$branch")
 else
-    brach='master'
+    branch='master'
     xbranch='master'
 fi
 if [ "$interval" = never ]
