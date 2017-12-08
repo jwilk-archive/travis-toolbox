@@ -1,0 +1,16 @@
+Prerequisites
+=============
+
+* bash
+* Perl
+* curl
+* jo_
+* jq_
+
+.. _jo:
+   https://github.com/jpmens/jo
+
+.. _jq:
+   https://github.com/stedolan/jq
+
+.. vim:ft=rst ts=3 sts=3 sw=3 et
