@@ -48,15 +48,16 @@ else
 fi
 base='https://api.travis-ci.org'
 url="$base/repo/$xrepo/branch/$xbranch/cron"
+jq_expr='"Repo: " + .repository.slug + "@" + .branch.name, "Interval: " + .interval, "Last run: " + .last_run, "Next run: " + .next_run, "Run if recent build exists: " + (if .dont_run_if_recent_build_exists then "no" else "yes" end)'
 if [ -n "$data" ]
 then
     res=$(turl -H 'Content-Type: application/json' -d "$data" -X POST "$url")
-    jq . <<<"$res"
+    jq -r "$jq_expr" <<<"$res"
 else
     res=$(turl -X GET "$url")
     if [ -z "$interval" ]
     then
-        jq . <<<"$res"
+        jq -r "$jq_expr" <<<"$res"
     else
         id=$(jq '.["id"]' <<<"$res")
         turl -X DELETE "$base/cron/$id"
