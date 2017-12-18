@@ -16,12 +16,22 @@ urlescape()
     perl -E '$_ = $ARGV[0]; chomp; s/\W/sprintf "%%%02x", ord $&/ge; say $_' "$@"
 }
 
+get_curl_config()
+{
+    printf 'header = "Authorization: token %s"\n' "$token"
+    cacert=/usr/share/ca-certificates/mozilla/COMODO_RSA_Certification_Authority.crt
+    if [ -d "${cacert%/*}" ]
+    then
+        printf 'capath = "/nonexistent"\n'
+        printf 'cacert = "%s"\n' "$cacert"
+    fi
+}
+
 turl()
 {
     curl \
         --silent --fail --show-error \
-        --capath /nonexistent --cacert "$cacert" \
-        -K <(printf 'header = "Authorization: token %s"\n' "$token") \
+        -K <(get_curl_config) \
         -H 'Travis-API-Version: 3' \
         -H 'User-Agent: travis-trigger (https://github.com/jwilk/travis-toolbox)' \
         "$@"
@@ -29,7 +39,6 @@ turl()
 
 [ $# -eq 1 ] || [ $# -eq 2 ] || usage
 token="$TRAVIS_TOKEN"
-cacert=/usr/share/ca-certificates/mozilla/COMODO_RSA_Certification_Authority.crt
 repo="$1"
 [ -z "${repo##*/*}" ] || repo="$USER/$repo"
 xrepo=$(urlescape "$repo")
