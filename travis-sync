@@ -5,14 +5,14 @@
 
 set -e -u
 
-cacert=/usr/share/ca-certificates/mozilla/DigiCert_High_Assurance_EV_Root_CA.crt
+cacert=/usr/share/ca-certificates/mozilla/COMODO_RSA_Certification_Authority.crt
 token="$TRAVIS_TOKEN"
 
 turl()
 {
     curl \
         --silent --fail --show-error \
-        --cacert "$cacert" \
+        --capath /nonexistent --cacert "$cacert" \
         -K <(printf 'header = "Authorization: token %s"\n' "$token") \
         -H 'Travis-API-Version: 3' \
         -H 'User-Agent: travis-sync (https://github.com/jwilk/travis-toolbox)' \
