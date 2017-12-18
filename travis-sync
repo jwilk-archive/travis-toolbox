@@ -5,6 +5,12 @@
 
 set -e -u
 
+usage()
+{
+    printf 'Usage: %s\n' "$0" >&2
+    exit 1
+}
+
 get_curl_config()
 {
     printf 'header = "Authorization: token %s"\n' "$token"
@@ -26,6 +32,7 @@ turl()
         "$@"
 }
 
+[ $# -eq 0 ] || usage
 token="$TRAVIS_TOKEN"
 res=$(turl "https://api.travis-ci.org/user")
 url=$(jq -r '.["@href"]' <<<"$res")
