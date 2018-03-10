@@ -7,9 +7,8 @@ set -e -u
 
 usage()
 {
-    printf 'Usage: %s REPO BRANCH [INTERVAL]\n' "$0" >&2
-    printf 'Intervals: never daily weekly monthly\n' >&2
-    exit 1
+    printf 'Usage: %s [-b BRANCH] REPO [INTERVAL]\n' "$0"
+    printf 'Intervals: never daily weekly monthly\n'
 }
 
 urlescape()
@@ -35,17 +34,29 @@ turl()
         -K <(get_curl_config) \
         -H 'Travis-API-Version: 3' \
         -H 'User-Agent: travis-cron (https://github.com/jwilk/travis-toolbox)' \
-        "$@"
+        "$@" >&2
 }
 
-[ $# -eq 2 ] || [ $# -eq 3 ] || usage
+branch=master
+while getopts 'hb:' opt
+do
+    case "$opt" in
+        h) usage; exit 0;;
+        b) branch="$OPTARG";;
+        *) exit 1;;
+    esac
+done
+shift $((OPTIND - 1))
+[ $# -eq 1 ] || [ $# -eq 2 ] || {
+    usage >&2
+    exit 1
+}
 token="$TRAVIS_TOKEN"
 repo="$1"
 [ -z "${repo##*/*}" ] || repo="$USER/$repo"
 xrepo=$(urlescape "$repo")
-branch="$2"
 xbranch=$(urlescape "$branch")
-interval="${3-}"
+interval="${2-}"
 if [ -z "$interval" ] || [ "$interval" = never ]
 then
     data=
@@ -53,7 +64,8 @@ elif [ "$interval" = 'daily' ] || [ "$interval" = 'weekly' ] || [ "$interval" = 
 then
     data=$(jo cron.interval="$interval" cron.dont_run_if_recent_build_exists@true)
 else
-    usage
+    usage >&2
+    exit 1
 fi
 base='https://api.travis-ci.org'
 url="$base/repo/$xrepo/branch/$xbranch/cron"
