@@ -7,7 +7,7 @@ set -e -u
 
 usage()
 {
-    printf 'Usage: %s <repo>\n' "$0" >&2
+    printf 'Usage: %s <repo>\n' "${0##*/}" >&2
     exit 1
 }
 
