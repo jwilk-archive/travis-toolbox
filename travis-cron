@@ -7,7 +7,7 @@ set -e -u
 
 usage()
 {
-    printf 'Usage: %s <repo> <branch> [interval]\n' "$0" >&2
+    printf 'Usage: %s REPO BRANCH [INTERVAL]\n' "$0" >&2
     printf 'Intervals: never daily weekly monthly\n' >&2
     exit 1
 }
