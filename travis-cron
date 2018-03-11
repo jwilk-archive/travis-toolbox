@@ -34,7 +34,7 @@ turl()
         -K <(get_curl_config) \
         -H 'Travis-API-Version: 3' \
         -H 'User-Agent: travis-cron (https://github.com/jwilk/travis-toolbox)' \
-        "$@" >&2
+        "$@"
 }
 
 branch=master
