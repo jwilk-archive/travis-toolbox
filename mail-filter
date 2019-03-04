@@ -1,0 +1,45 @@
+#!/usr/bin/env python3
+
+# Copyright © 2019 Jakub Wilk <jwilk@jwilk.net>
+# SPDX-License-Identifier: MIT
+
+import sys
+
+if sys.version_info < (3, 4):
+    raise RuntimeError('Python >= 3.4 is required')
+
+import email.generator
+import email.policy
+import re
+import urllib.parse
+
+def fix_url(url):
+    tup = urllib.parse.urlsplit(url)
+    query = urllib.parse.parse_qsl(tup.query)
+    query = [(k, v) for (k, v) in query if not k.startswith('utm_')]
+    query = urllib.parse.urlencode(query)
+    tup = tup._replace(fragment='', query=query)
+    return urllib.parse.urlunsplit(tup)
+
+def main():
+    msg = email.message_from_binary_file(sys.stdin.buffer, policy=email.policy.default)
+    text_msg = msg.get_body('plain')
+    body = text_msg.get_payload(decode=True)
+    body = body.decode(text_msg.get_content_charset())
+    def subst(match):
+        url = match.group(0)
+        return fix_url(url)
+    body = re.sub(r'https://travis-ci.org/\S+', subst, body)
+    body = re.sub(r'\n--\n\n(?=You can unsubscribe\b)', '\n-- \n\n', body)
+    body = body.rstrip('\n') + '\n\n'
+    msg.clear_content()
+    msg.set_content(body, cte='8bit')
+    content_length = len(msg.get_payload(decode=True)) - 1
+    msg['Content-Length'] = str(content_length)
+    generator = email.generator.BytesGenerator(sys.stdout.buffer, mangle_from_=False)
+    generator.flatten(msg, unixfrom=True)
+
+if __name__ == '__main__':
+    main()
+
+# vim:ts=4 sts=4 sw=4 et
