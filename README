@@ -1,6 +1,8 @@
 Prerequisites
 =============
 
+Most of the scripts require:
+
 * bash
 * Perl (≥ 5.10)
 * curl
@@ -12,5 +14,9 @@ Prerequisites
 
 .. _jq:
    https://github.com/stedolan/jq
+
+The ``mail-filter`` script requires:
+
+* Python ≥ 3.4
 
 .. vim:ft=rst ts=3 sts=3 sw=3 et
