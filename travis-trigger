@@ -50,8 +50,7 @@ else
     branch='master'
     xbranch='master'
 fi
-data=$(jo -- -s branch="$xbranch")
-data=$(jo request="$data")
+data=$(jq -n '{"request": {"branch": $branch}}' --arg branch "$xbranch")
 url="https://api.travis-ci.org/repo/$xrepo/requests"
 res=$(turl -H 'Content-Type: application/json' -d "$data" -X POST "$url")
 jq . <<<"$res"

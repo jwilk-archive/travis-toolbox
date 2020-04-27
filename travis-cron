@@ -62,7 +62,7 @@ then
     data=
 elif [ "$interval" = 'daily' ] || [ "$interval" = 'weekly' ] || [ "$interval" = 'monthly' ]
 then
-    data=$(jo cron.interval="$interval" cron.dont_run_if_recent_build_exists@true)
+    data=$(jq -n '{"cron.interval": $int, "cron.dont_run_if_recent_build_exists": true}' --arg int "$interval")
 else
     usage >&2
     exit 1
