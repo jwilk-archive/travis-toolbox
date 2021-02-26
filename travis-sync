@@ -14,7 +14,7 @@ usage()
 get_curl_config()
 {
     printf 'header = "Authorization: token %s"\n' "$token"
-    cacert=/usr/share/ca-certificates/mozilla/COMODO_RSA_Certification_Authority.crt
+    cacert=/usr/share/ca-certificates/mozilla/USERTrust_RSA_Certification_Authority.crt
     if [ -d "${cacert%/*}" ]
     then
         printf 'capath = "/nonexistent"\n'
